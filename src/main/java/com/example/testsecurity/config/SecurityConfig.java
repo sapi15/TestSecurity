@@ -34,8 +34,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
 
         httpSecurity
-                .authorizeHttpRequests((auth) -> auth                                   // spring boot 3.1.x / spring security 6.x 부터는 람다식 필수.
-                        .requestMatchers("/", "/login").permitAll()                 // 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
+                .authorizeHttpRequests((auth) -> auth                                                            // spring boot 3.1.x / spring security 6.x 부터는 람다식 필수.
+                        .requestMatchers("/", "/login", "/join", "/joinProc").permitAll()                 // 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()                                   // 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
