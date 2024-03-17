@@ -4,12 +4,32 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity                              // Security 에서 접근 가능하도록 해주는 역할(?)
 public class SecurityConfig {
 
+    /**
+     * 암호화.
+     * spring security는 사용자 인증(로그인)시에 비밀번호에 단방향(해독불가) 해시 암호화를 진행하여 비밀번호 대조를 한다.
+     * 따라서 아래 설정으로 회원가입시 비밀번호 암호화가 진행된다.
+     *
+     * spring security에서 권장하는 암호화는 BCryptPasswordEncoder
+     * @return
+     */
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Security 설정.
+     * @param httpSecurity
+     * @return
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
 
@@ -28,7 +48,7 @@ public class SecurityConfig {
                 );
 
         httpSecurity
-                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
+                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
 
 
 
