@@ -2,6 +2,8 @@ package com.example.testsecurity.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,12 +40,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
 
+//        httpSecurity
+//                .authorizeHttpRequests((auth) -> auth                                                            // spring boot 3.1.x / spring security 6.x 부터는 람다식 필수.
+//                        .requestMatchers("/", "/login", "/join", "/joinProc").permitAll()                 // 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
+//                        .requestMatchers("/admin").hasRole("ADMIN")                                             // admin url은 ADMIN 권한자만 접근가능.
+//                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
+//                        .anyRequest().authenticated()                                   // 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
+//                );
+
         httpSecurity
-                .authorizeHttpRequests((auth) -> auth                                                            // spring boot 3.1.x / spring security 6.x 부터는 람다식 필수.
-                        .requestMatchers("/", "/login", "/join", "/joinProc").permitAll()                 // 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
-                        .requestMatchers("/admin").hasRole("ADMIN")                                             // admin url은 ADMIN 권한자만 접근가능.
-                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
-                        .anyRequest().authenticated()                                   // 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/login", "/join", "/joinProc").permitAll()
+                        .requestMatchers("/").hasAnyRole("USER")
+                        .requestMatchers("/manager").hasAnyRole("MANAGER")
+                        .requestMatchers("/admin").hasAnyRole("ADMIN")
+                        .anyRequest().authenticated()
                 );
 
 //        httpSecurity
@@ -121,6 +132,22 @@ public class SecurityConfig {
 //        return new InMemoryUserDetailsManager(user1, user2);
 //    }
 
+
+    /**
+     * 계층 권한 설정.
+     *
+     * 권한을 추가할땐, 앞 권한에 \n도 붙여 준다.
+     * @return
+     */
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_MANAGER\n" +
+                                "ROLE_MANAGER > ROLE_USER");
+
+        return hierarchy;
+    }
 
 
 
