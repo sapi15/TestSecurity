@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer>{
 
 	boolean existsByUsername(String username);                      // JPA 커스텀 메소드.(existsBy*). (참고: @Query 를 이용해서 쿼리를 사용자 정의로 지정해줄수도 있는듯.)
 
-//	UserEntity findByUsername(String username);						// JPA 커스텀 메소드. (findBy*)
+	UserEntity findByUsername(String username);						// JPA 커스텀 메소드. (findBy*)
 	
 	
 
