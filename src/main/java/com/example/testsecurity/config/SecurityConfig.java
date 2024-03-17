@@ -47,8 +47,8 @@ public class SecurityConfig {
                         .permitAll()												    // 로그인 페이지에 모든 url 접근 허용.
                 );
 
-        httpSecurity
-                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
+//        httpSecurity
+//                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
 
 
         httpSecurity
@@ -72,6 +72,12 @@ public class SecurityConfig {
         httpSecurity
                 .sessionManagement((auth) -> auth
                         .sessionFixation().changeSessionId()
+                );
+
+
+        httpSecurity
+                .logout((auth) -> auth.logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
                 );
 
 
