@@ -51,6 +51,29 @@ public class SecurityConfig {
                 .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
 
 
+        httpSecurity
+                .sessionManagement((auth) -> auth
+                        .maximumSessions(1)                                             // 하나의 아이디에 대한 다중 로그인 허용 개수
+                        .maxSessionsPreventsLogin(true)                                 //  다중 로그인 개수를 초과하였을 경우 처리 방법. true : 초과시 새로운 로그인 차단, false : 초과시 기존 세션 하나 삭제
+                );
+
+        /**
+         * - sessionManagement().sessionFixation().none() : 로그인 시 세션 정보 변경 안함
+         * - sessionManagement().sessionFixation().newSession() : 로그인 시 세션 새로 생성
+         * - sessionManagement().sessionFixation().changeSessionId() : 로그인 시 동일한 세션에 대한 id 변경
+         */
+//        httpSecurity
+//                .sessionManagement((session) -> session
+//                        .sessionFixation((sessionFixation) -> sessionFixation
+//                                .newSession()
+//                        )
+//                );
+
+        httpSecurity
+                .sessionManagement((auth) -> auth
+                        .sessionFixation().changeSessionId()
+                );
+
 
         return httpSecurity.build();
     }
