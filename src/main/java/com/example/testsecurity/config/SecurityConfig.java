@@ -2,6 +2,7 @@ package com.example.testsecurity.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -45,11 +46,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated()                                   // 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
                 );
 
+//        httpSecurity
+//                .formLogin((auth) -> auth.loginPage("/login")							// 로그인 페이지 경로. 로그인 페이지를 지정해야, .requestMatchers().permitAll() 에 허용되지 않은 url로 접근 시도 할때, 403에러가 발생하지 않는다.
+//                        .loginProcessingUrl("/loginProc")							    // view에서 로그인 form action에 설정된 url 입력. (security에서 사용할 data를 전달해주는 역할?)
+//                        .permitAll()												    // 로그인 페이지에 모든 url 접근 허용.
+//                );
+
         httpSecurity
-                .formLogin((auth) -> auth.loginPage("/login")							// 로그인 페이지 경로. 로그인 페이지를 지정해야, .requestMatchers().permitAll() 에 허용되지 않은 url로 접근 시도 할때, 403에러가 발생하지 않는다.
-                        .loginProcessingUrl("/loginProc")							    // view에서 로그인 form action에 설정된 url 입력. (security에서 사용할 data를 전달해주는 역할?)
-                        .permitAll()												    // 로그인 페이지에 모든 url 접근 허용.
-                );
+                .httpBasic(Customizer.withDefaults());                                  // HTTP 인증 헤더에 부착하여 서버측으로 요청을 보내는 방식.
 
 //        httpSecurity
 //                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
@@ -99,23 +103,23 @@ public class SecurityConfig {
      * DB연결 안되어져 있고, 로그인 페이지 정도와, BCrypt 암호화 정도까지만 구현 되어져 있어야 작동되는 듯 하다.
      * @return
      */
-    @Bean
-    public UserDetailsService userDetailsService() {
-
-        UserDetails user1 = User.builder()
-                .username("user1")
-                .password(bCryptPasswordEncoder().encode("1234"))
-                .roles("ADMIN")
-                .build();
-
-        UserDetails user2 = User.builder()
-                .username("user2")
-                .password(bCryptPasswordEncoder().encode("1234"))
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(user1, user2);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//
+//        UserDetails user1 = User.builder()
+//                .username("user1")
+//                .password(bCryptPasswordEncoder().encode("1234"))
+//                .roles("ADMIN")
+//                .build();
+//
+//        UserDetails user2 = User.builder()
+//                .username("user2")
+//                .password(bCryptPasswordEncoder().encode("1234"))
+//                .roles("USER")
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(user1, user2);
+//    }
 
 
 
