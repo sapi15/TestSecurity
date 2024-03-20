@@ -13,10 +13,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity                              // Security 에서 접근 가능하도록 해주는 역할(?)
 public class SecurityConfig {
+	
+	
+	
+	
+	// 인증 실패 시 처리를 담당하는 핸들러를 생성하는 메서드
+		@Bean
+		public AuthenticationFailureHandler authenticationFailureHandler() {
+			return new SimpleUrlAuthenticationFailureHandler("/login?error"); // 실패 시 /login 페이지로 리다이렉트하며 실패 메시지 전달
+		}
 
     /**
      * 암호화.
@@ -42,39 +53,44 @@ public class SecurityConfig {
 
 //        httpSecurity
 //                .authorizeHttpRequests((auth) -> auth                                                            // spring boot 3.1.x / spring security 6.x 부터는 람다식 필수.
-//                        .requestMatchers("/", "/login", "/join", "/joinProc").permitAll()                 // 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
+//                        .requestMatchers("/", "/login/**", "/join", "/joinProc").permitAll()                 		// 접근권한 체크는 여기 상단부터 시작되기때문에 순서 유의해야 함.
 //                        .requestMatchers("/admin").hasRole("ADMIN")                                             // admin url은 ADMIN 권한자만 접근가능.
 //                        .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
-//                        .anyRequest().authenticated()                                   // 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
+//                        .anyRequest().authenticated()                                   						// 위에 설정한 url 이외의 나머지는 로그인 후에 접근가능하도록.
 //                );
 
         httpSecurity
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/join", "/joinProc").permitAll()
-                        .requestMatchers("/").hasAnyRole("USER")
-                        .requestMatchers("/manager").hasAnyRole("MANAGER")
-                        .requestMatchers("/admin").hasAnyRole("ADMIN")
+                        .requestMatchers("/login/**", "/join", "/joinProc", "/api/message").permitAll()
+                        .requestMatchers("/user/**").hasAnyRole("USER")
+                        .requestMatchers("/manager/**").hasAnyRole("MANAGER")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 
-//        httpSecurity
-//                .formLogin((auth) -> auth.loginPage("/login")							// 로그인 페이지 경로. 로그인 페이지를 지정해야, .requestMatchers().permitAll() 에 허용되지 않은 url로 접근 시도 할때, 403에러가 발생하지 않는다.
-//                        .loginProcessingUrl("/loginProc")							    // view에서 로그인 form action에 설정된 url 입력. (security에서 사용할 data를 전달해주는 역할?)
-//                        .permitAll()												    // 로그인 페이지에 모든 url 접근 허용.
-//                );
-
         httpSecurity
-                .httpBasic(Customizer.withDefaults());                                  // HTTP 인증 헤더에 부착하여 서버측으로 요청을 보내는 방식.
-
-//        httpSecurity
-//                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
-
-
-        httpSecurity
-                .sessionManagement((auth) -> auth
-                        .maximumSessions(1)                                             // 하나의 아이디에 대한 다중 로그인 허용 개수
-                        .maxSessionsPreventsLogin(true)                                 //  다중 로그인 개수를 초과하였을 경우 처리 방법. true : 초과시 새로운 로그인 차단, false : 초과시 기존 세션 하나 삭제
+                .formLogin((auth) -> auth.loginPage("/login/page.do")							// 로그인 페이지 경로. 로그인 페이지를 지정해야, .requestMatchers().permitAll() 에 허용되지 않은 url로 접근 시도 할때, 403에러가 발생하지 않는다.
+                		.usernameParameter("username")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/", true)									// 로그인 성공 시 기본 URL 설정
+                		.loginProcessingUrl("/loginProc")							    // view에서 로그인 form action에 설정된 url 입력. (security에서 사용할 data를 전달해주는 역할?)
+                        .permitAll()												    // 로그인 페이지에 모든 url 접근 허용.
+                        .failureHandler(authenticationFailureHandler())
                 );
+
+//        httpSecurity
+//                .httpBasic(Customizer.withDefaults());                                  // HTTP 인증 헤더에 부착하여 서버측으로 요청을 보내는 방식.
+        
+
+        httpSecurity
+                .csrf((auth) -> auth.disable());										// security에는 기본적으로 csrf필터가 작동되어져 있다.(post요청을 할때 csrf 토큰을 필요로 한다.) 개발때는 편리성을 위해 disable() 처리.
+
+
+//        httpSecurity
+//                .sessionManagement((auth) -> auth
+//                        .maximumSessions(1)                                             // 하나의 아이디에 대한 다중 로그인 허용 개수
+//                        .maxSessionsPreventsLogin(true)                                 //  다중 로그인 개수를 초과하였을 경우 처리 방법. true : 초과시 새로운 로그인 차단, false : 초과시 기존 세션 하나 삭제
+//                );
 
         /**
          * - sessionManagement().sessionFixation().none() : 로그인 시 세션 정보 변경 안함
@@ -88,16 +104,16 @@ public class SecurityConfig {
 //                        )
 //                );
 
-        httpSecurity
-                .sessionManagement((auth) -> auth
-                        .sessionFixation().changeSessionId()
-                );
+//        httpSecurity
+//                .sessionManagement((auth) -> auth
+//                        .sessionFixation().changeSessionId()
+//                );
 
 
-        httpSecurity
-                .logout((auth) -> auth.logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                );
+//        httpSecurity
+//                .logout((auth) -> auth.logoutUrl("/logout")
+//                        .logoutSuccessUrl("/")
+//                );
 
 
         return httpSecurity.build();
